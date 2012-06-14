@@ -1,0 +1,13 @@
+*.lo
+*.pc
+.libs/
+.deps/
+Makefile
+Makefile.in
+output.*
+traces.*
+config.*
+configure
+
+
+
