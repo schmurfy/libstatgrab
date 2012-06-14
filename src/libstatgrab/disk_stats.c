@@ -229,7 +229,7 @@ static int init_valid_fs_types() {
 #if defined(FREEBSD) || defined(DFBSD)
 	struct xvfsconf *xvfsp;
 	size_t buflen;
-	int nbvfs = 0;
+	int nbvfs = 0, i;
 
 	if (sysctlbyname("vfs.conflist", NULL, &buflen, NULL, 0) < 0) {
 		sg_set_error_with_errno(SG_ERROR_SYSCTLBYNAME, "vfs.conflist");
