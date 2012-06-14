@@ -404,6 +404,8 @@ sg_process_stats *sg_get_process_stats(int *entries){
 
 #ifdef FREEBSD5
 		if (kp_stats[i].ki_stat == 0) {
+#elif defined(OPENBSD)
+		if (kp_stats[i].p_stat == 0) {
 #else
 		if (kp_stats[i].kp_proc.p_stat == 0) {
 #endif
@@ -424,6 +426,8 @@ sg_process_stats *sg_get_process_stats(int *entries){
 		name = kp_stats[i].ki_comm;
 #elif defined(DFBSD)
 		name = kp_stats[i].kp_thread.td_comm;
+#elif defined(OPENBSD)
+		name = kp_stats[i].p_comm;
 #else
 		name = kp_stats[i].kp_proc.p_comm;
 #endif
@@ -436,6 +440,10 @@ sg_process_stats *sg_get_process_stats(int *entries){
 #ifdef FREEBSD5
 		mib[2] = KERN_PROC_ARGS;
 		mib[3] = kp_stats[i].ki_pid;
+#elif defined(OPENBSD)
+		mib[1] = KERN_PROC_ARGS;
+		mib[2] = kp_stats[i].p_pid;
+		mib[3] = KERN_PROC_ARGV;
 #else
 		mib[1] = KERN_PROC_ARGS;
 		mib[2] = kp_stats[i].kp_proc.p_pid;
@@ -547,6 +555,11 @@ sg_process_stats *sg_get_process_stats(int *entries){
 		proc_state_ptr->pid = kp_stats[i].ki_pid;
 		proc_state_ptr->parent = kp_stats[i].ki_ppid;
 		proc_state_ptr->pgid = kp_stats[i].ki_pgid;
+#elif defined(OPENBSD)
+		proc_state_ptr->pid = kp_stats[i].p_pid;
+		proc_state_ptr->parent = kp_stats[i].p_ppid;
+		proc_state_ptr->pgid = kp_stats[i].p__pgid;
+
 #else
 		proc_state_ptr->pid = kp_stats[i].kp_proc.p_pid;
 		proc_state_ptr->parent = kp_stats[i].kp_eproc.e_ppid;
@@ -563,6 +576,11 @@ sg_process_stats *sg_get_process_stats(int *entries){
 		proc_state_ptr->euid = kp_stats[i].kp_eproc.e_ucred.cr_svuid;
 		proc_state_ptr->gid = kp_stats[i].kp_eproc.e_ucred.cr_rgid;
 		proc_state_ptr->egid = kp_stats[i].kp_eproc.e_ucred.cr_svgid;
+#elif defined(OPENBSD)
+		proc_state_ptr->uid = kp_stats[i].p_uid;
+		proc_state_ptr->euid = kp_stats[i].p_svuid;
+		proc_state_ptr->gid = kp_stats[i].p_rgid;
+		proc_state_ptr->egid = kp_stats[i].p_svgid;
 #else
 		proc_state_ptr->uid = kp_stats[i].kp_eproc.e_pcred.p_ruid;
 		proc_state_ptr->euid = kp_stats[i].kp_eproc.e_pcred.p_svuid;
@@ -580,12 +598,20 @@ sg_process_stats *sg_get_process_stats(int *entries){
 		proc_state_ptr->cpu_percent =
 			((double)kp_stats[i].ki_pctcpu / FSCALE) * 100.0;
 		proc_state_ptr->nice = kp_stats[i].ki_nice;
-#else
-		proc_state_ptr->proc_size =
-			kp_stats[i].kp_eproc.e_vm.vm_map.size;
+#elif defined(OPENBSD)
+		proc_state_ptr->proc_size = kp_stats[i].p_vm_map_size;
 		/* This is in pages */
-		proc_state_ptr->proc_resident =
-			kp_stats[i].kp_eproc.e_vm.vm_rssize * getpagesize();
+		proc_state_ptr->proc_resident = kp_stats[i].p_vm_rssize * getpagesize();
+		proc_state_ptr->time_spent = kp_stats[i].p_rtime_sec;		
+		proc_state_ptr->cpu_percent = ((double)kp_stats[i].p_pctcpu / FSCALE) * 100.0;
+		proc_state_ptr->nice = kp_stats[i].p_nice;
+
+#else
+		proc_state_ptr->proc_size = kp_stats[i].kp_eproc.e_vm.vm_map.size;
+
+		/* This is in pages */
+		proc_state_ptr->proc_resident = kp_stats[i].kp_eproc.e_vm.vm_rssize * getpagesize();
+		
 #if defined(NETBSD) || defined(OPENBSD)
 		proc_state_ptr->time_spent =
 			kp_stats[i].kp_proc.p_rtime.tv_sec;
@@ -676,6 +702,8 @@ sg_process_stats *sg_get_process_stats(int *entries){
 #else
 #ifdef FREEBSD5
 		switch (kp_stats[i].ki_stat) {
+#elif defined(OPENBSD)
+		switch (kp_stats[i].p_stat) {
 #else
 		switch (kp_stats[i].kp_proc.p_stat) {
 #endif

@@ -863,13 +863,13 @@ sg_disk_io_stats *sg_get_disk_io_stats(int *entries){
 		rbytes = wbytes = stats[i].dk_bytes;
 #endif
 #else
-#ifdef HAVE_DS_RBYTES
+// #ifdef HAVE_DS_RBYTES
 		rbytes = stats[i].ds_rbytes;
 		wbytes = stats[i].ds_wbytes;
-#else
-		/* Before 3.5, OpenBSD merged reads and writes */
-		rbytes = wbytes = stats[i].ds_bytes;
-#endif
+// #else
+//    /* Before 3.5, OpenBSD merged reads and writes */
+//    rbytes = wbytes = stats[i].ds_bytes;
+// #endif
 #endif
 
 		/* Don't keep stats for disks that have never been used. */
